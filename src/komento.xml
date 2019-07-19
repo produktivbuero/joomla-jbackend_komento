@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.0" type="plugin" group="jbackend" method="upgrade">
+  <name>plg_jbackend_komento</name>
+  <creationDate>06/2019</creationDate>
+  <author>Sebastian Brümmer</author>
+  <authorEmail>sebastian@produktivbuero.de</authorEmail>
+  <authorUrl>https://www.produktivbuero.de</authorUrl>
+  <copyright>Copyright (C) 2019 *produktivbüro . All rights reserved</copyright>
+  <license>GNU General Public License version 2 or later</license>
+  <version>0.9.0</version>
+  <description>PLG_JBACKEND_KOMENTO_DESCRIPTION</description>
+
+  <!-- Language files -->
+  <languages>
+      <language tag="en-GB">language/en-GB/en-GB.plg_jbackend_komento.ini</language>
+      <language tag="en-GB">language/en-GB/en-GB.plg_jbackend_komento.sys.ini</language>
+  </languages>
+
+  <!-- Plugin files -->
+  <files>
+    <filename plugin="komento">komento.php</filename>
+    <filename>index.html</filename>
+  </files>
+
+  <!-- Config parameter -->
+  <config>
+    <fields name="params">
+
+      <fieldset name="basic">
+
+        <field name="sort" type="list"
+          label="PLG_JBACKEND_KOMENTO_FIELD_SORT_LABEL" description="PLG_JBACKEND_KOMENTO_FIELD_SORT_DESC"
+          size="1" default="oldest">
+          <option value="oldest">JGLOBAL_OLDEST_FIRST</option>
+          <option value="latest">JGLOBAL_MOST_RECENT_FIRST</option>
+          <option value="random">JGLOBAL_RANDOM_ORDER</option>
+        </field>
+
+        <field name="filter_state" type="list"
+          label="JSTATUS" description="PLG_JBACKEND_KOMENTO_FIELD_FILTER_STATES_DESC"
+          class="chzn-color-state"
+          size="1" default="1">
+          <option value="false">JOPTION_DO_NOT_USE</option>
+          <option value="1">JPUBLISHED</option>
+          <option value="0">JUNPUBLISHED</option>
+        </field>
+
+        <field name="max_limit" type="text"
+          label="PLG_JBACKEND_KOMENTO_FIELD_MAX_LIMIT_LABEL" description="PLG_JBACKEND_KOMENTO_FIELD_MAX_LIMIT_DESC"
+          class="inputbox"
+          default="20" />
+
+      </fieldset>
+
+    </fields>
+  </config>
+
+</extension>
