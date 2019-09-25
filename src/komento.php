@@ -272,9 +272,8 @@ class plgJBackendKomento extends JPlugin
 	$komento_configs = json_decode($db->loadResult());
 	$komento_enabled = (int)$komento_configs->enable_komento;
 	if (!$komento_enabled == 1) {
-		$response['status'] = 'ko';
-		$response['error'] = 'KOM_NON'; // komento not enabled on selected component
-		return true;
+    $response = self::generateError('KOM_NON'); // component required
+    return false;
 	}
 	$moderation_enabled = (int)$komento_configs->enable_moderation;
 	if (!$moderation_enabled == 1) {
@@ -307,18 +306,16 @@ class plgJBackendKomento extends JPlugin
 		}
 	}
 	if (!$is_allowed === true) {
-		$response['status'] = 'ko';
-		$response['error'] = 'USR_DNY'; // current user does not have the permission to post
-		return true;
+    $response = self::generateError('USR_DNY'); // current user does not have the permission to post
+    return false;
 	}
 	
 	// check if user email address is valid before subscribing
 	$subscribe = $comment_data['subscribe'];
 	$email = $comment_data['email'];
-	if ($subscribe == 1 && !preg_match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$^', $email)) { 
-		$response['status'] = 'ko';
-		$response['error'] = 'EML_NOT'; // user email address is not valid or is not recognised
-		return true;
+	if ($subscribe == 1 && !preg_match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$^', $email)) {
+    $response = self::generateError('EML_NOT'); // // user email address is not valid or is not recognised
+    return false;
 	}
     
     // function to write the new comment into the database
