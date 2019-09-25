@@ -7,7 +7,7 @@
  * @copyright Copyright 2014 - 2015
  * @license GNU Public License
  * @link http://www.selfget.com
- * @version 0.9.0
+ * @version 0.9.1
  */
 
 // no direct access
@@ -94,6 +94,18 @@ class plgJBackendKomento extends JPlugin
       case 'KOM_GEN':
         $error['error_code'] = 'KOM_GEN';
         $error['error_description'] = 'Generic komento error';
+        break;
+      case 'KOM_NON':
+        $error['error_code'] = 'KOM_NON';
+        $error['error_description'] = 'Komento not enabled on selected component';
+        break;
+      case 'USR_DNY':
+        $error['error_code'] = 'USR_DNY';
+        $error['error_description'] = 'User does not have the permission to post';
+        break;
+      case 'EML_NOT':
+        $error['error_code'] = 'EML_NOT';
+        $error['error_description'] = 'User email address is not valid or is not recognised';
         break;
     }
 
@@ -201,6 +213,207 @@ class plgJBackendKomento extends JPlugin
     $response['status'] = 'ok';
     $response = array_merge($response, $comment);
 
+    return true;
+  }
+  
+  /**
+   * Create a new comment
+   *
+   * @param   object    $response    The response generated
+   * @param   object    $status      The boundary conditions (e.g. authentication status). Useful to return additional info
+   *
+   * @return  boolean   true if there are no problems (status = ok), false in case of errors (status = ko)
+   *
+   * @since   0.9.1
+   */
+  public function actionCreate(&$response, &$status = null)
+  { 
+    // construct comment data array with passed data	
+	
+	$comment_data = array(
+						'component' => $_POST['component'],
+						'cid' => $_POST['cid'],
+						'title' => $_POST['title'],
+						'comment' => $_POST['comment'],
+						'name' => $_POST['name'],
+						'email' => $_POST['email'],
+						'url' => $_POST['url'],
+						'created_by' => $_POST['created_by'],
+						'parent_id' => $_POST['parent_id'],
+						'sticked' => $_POST['sticked'],
+						'subscribe' => $_POST['subscribe']
+    		  );
+    
+    // construct comment data with demo data (for testing purpose only)
+    /*
+    $comment_data = array(
+            'component' => 'com_content',
+            'cid' => 2,
+            'title' => 'Test title',
+            'comment' => 'Test comment',
+            'name' => 'Myname',
+            'email' => 'email@email.com',
+            'url' => 'https://www.google.com',
+            'created_by' => 196,
+            'parent_id' => 0,
+            'sticked' => 0,
+            'subscribe' => 1
+            );
+  */
+    
+  // check if the needed component is enabled and if moderation of comments is enabled
+  $component_system_name = $comment_data['component'];
+  $db = JFactory::getDbo();
+	$query = $db->getQuery(true);
+	$query->select($db->quoteName('params'));
+	$query->from($db->quoteName('#__komento_configs'));
+	$query->where($db->quoteName('component') . ' = '.  $db->quote($component_system_name));
+	$db->setQuery($query);
+	$komento_configs = json_decode($db->loadResult());
+	$komento_enabled = (int)$komento_configs->enable_komento;
+	if (!$komento_enabled == 1) {
+		$response['status'] = 'ko';
+		$response['error'] = 'KOM_NON'; // komento not enabled on selected component
+		return true;
+	}
+	$moderation_enabled = (int)$komento_configs->enable_moderation;
+	if (!$moderation_enabled == 1) {
+		$comment_data['published'] = 1;
+	} else {
+		$comment_data['published'] = 0;
+	}
+	
+	// check if the current user has the permission to post
+	$user_id = (int)$comment_data['created_by'];
+	$is_guest = !$user_id ? 1 : 0;
+	$is_allowed = false;
+	if (!$is_guest) {
+		$user_groups = JAccess::getGroupsByUser($user_id);
+	} else {
+		$user_groups = JAccess::getGroupsByUser(0);
+	}
+	foreach ($user_groups as $group) {
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$query->select($db->quoteName('rules'));
+		$query->from($db->quoteName('#__komento_acl'));
+		$query->where($db->quoteName('component') . ' = '.  $db->quote($component_system_name));
+		$query->where($db->quoteName('cid') . ' = '.  $group);
+		$db->setQuery($query);
+		$komento_acl = json_decode($db->loadResult());
+		$can_add = $komento_acl->add_comment;
+		$can_publish = $komento_acl->author_publish_comment;
+		if ($can_add && $can_publish) {
+			$is_allowed = true;
+		}
+	}
+	if (!$is_allowed === true) {
+		$response['status'] = 'ko';
+		$response['error'] = 'USR_DNY'; // current user does not have the permission to post
+		return true;
+	}
+	
+	// check if user email address is valid before subscribing
+	$subscribe = $comment_data['subscribe'];
+	$email = $comment_data['email'];
+	if ($subscribe == 1 && !preg_match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$^', $email)) { 
+		$response['status'] = 'ko';
+		$response['error'] = 'EML_NOT'; // user email address is not valid or is not recognised
+		return true;
+	}
+    
+    // function to write the new comment into the database
+    function write($data)
+	{	
+		// enter the new comment into the database
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$columns = array(
+						'component',
+						'cid',
+						'title',
+						'comment',
+						'name',
+						'email',
+						'url',
+						'created_by',
+						'parent_id',
+						'sticked',
+						'published'
+						);
+		$values = array(
+						$db->quote($data['component']),
+						$data['cid'],
+						$db->quote($data['title']),
+						$db->quote($data['comment']),
+						$db->quote($data['name']),
+						$db->quote($data['email']),
+						$db->quote($data['url']),
+						$data['created_by'],
+						$data['parent_id'],
+						$data['sticked'],
+						$data['published']
+						);
+		$query
+			->insert($db->quoteName('#__komento_comments'))
+			->columns($db->quoteName($columns))
+			->values(implode(',', $values));
+		$db->setQuery($query);
+		$db->execute();
+		
+		// get the id of the entered comment
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true);
+		$query->select('LAST_INSERT_ID()');
+		$db->setQuery($query);
+		$comment_id = $db->loadResult();
+		
+		// enter the subscription into the database
+		if ($data['subscribe'] == 1) {
+			$db = JFactory::getDbo();
+			$query = $db->getQuery(true);
+			$columns = array(
+							'type',
+							'component',
+							'cid',
+							'userid',
+							'fullname',
+							'email',
+							'created',
+							'published'
+							);
+			$values = array(
+							$db->quote('comment'),
+							$db->quote($data['component']),
+							$data['cid'],
+							$data['created_by'],
+							$db->quote($data['name']),
+							$db->quote($data['email']),
+							$db->quote(date("Y-m-d H:i:s")),
+							1
+							);
+			$query
+				->insert($db->quoteName('#__komento_subscription'))
+				->columns($db->quoteName($columns))
+				->values(implode(',', $values));
+			$db->setQuery($query);
+			$db->execute();
+		}
+		
+		return $comment_id;
+	}
+    
+    // write the new comment into the database
+    $comment_id = write($comment_data);
+    
+    // build response
+    if (!$comment_id) {
+    	$response['status'] = 'ko';
+    } else {
+    	$response['status'] = 'ok';
+		$response['id'] = $comment_id;
+    }
+    
     return true;
   }
 
@@ -338,6 +551,12 @@ class plgJBackendKomento extends JPlugin
         if ($action == 'get')
         {
           return $this->actionComment($response, $status);
+        }
+        break;
+      case 'create':
+        if ($action == 'post')
+        {
+          return $this->actionCreate($response, $status);
         }
         break;
     }
