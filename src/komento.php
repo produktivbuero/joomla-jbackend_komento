@@ -236,7 +236,7 @@ class plgJBackendKomento extends JPlugin
 	
 	$comment_data = array(
 						'component' => $this->app->input->getCmd('component', ''),
-						'cid' => $this->app->input->getInt('id', 0),
+						'cid' => $this->app->input->getInt('cid', 0),
 						'title' => $this->app->input->getString('title', ''),
 						'comment' => $this->app->input->getString('comment', ''),
 						'name' => $this->app->input->getString('name', ''),
