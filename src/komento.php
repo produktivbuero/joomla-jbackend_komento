@@ -87,13 +87,17 @@ class plgJBackendKomento extends JPlugin
         $error['error_code'] = 'KOM_CNF';
         $error['error_description'] = 'Comment not found';
         break;
+      case 'KOM_ID':
+        $error['error_code'] = 'KOM_ID';
+        $error['error_description'] = 'Comment id not specified';
+        break;
       case 'KOM_CNS':
         $error['error_code'] = 'KOM_CNS';
         $error['error_description'] = 'Component not specified';
         break;
-      case 'KOM_GEN':
-        $error['error_code'] = 'KOM_GEN';
-        $error['error_description'] = 'Generic komento error';
+      case 'KOM_CID':
+        $error['error_code'] = 'KOM_CID';
+        $error['error_description'] = 'Component item id (cid) not specified';
         break;
       case 'KOM_NON':
         $error['error_code'] = 'KOM_NON';
@@ -195,7 +199,7 @@ class plgJBackendKomento extends JPlugin
     // Check if komento id is set
     if (!isset($id))
     {
-      $response = self::generateError('KOM_GEN'); // Generic komento error
+      $response = self::generateError('KOM_ID'); // comment id not specified
       return false;
     }
 
@@ -260,9 +264,23 @@ class plgJBackendKomento extends JPlugin
             'subscribe' => 1
             );
   */
+
+  // check mandatory fields
+  $component_system_name = $comment_data['component'];
+  if (empty($component_system_name))
+  {
+    $response = self::generateError('KOM_CNS'); // component required
+    return false;
+  }
+
+  $component_id = $comment_data['cid'];
+  if (empty($component_id))
+  {
+    $response = self::generateError('KOM_CID'); // component item id required
+    return false;
+  }
     
   // check if the needed component is enabled and if moderation of comments is enabled
-  $component_system_name = $comment_data['component'];
   $db = JFactory::getDbo();
 	$query = $db->getQuery(true);
 	$query->select($db->quoteName('params'));
