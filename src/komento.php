@@ -231,17 +231,17 @@ class plgJBackendKomento extends JPlugin
     // construct comment data array with passed data	
 	
 	$comment_data = array(
-						'component' => $_POST['component'],
-						'cid' => $_POST['cid'],
-						'title' => $_POST['title'],
-						'comment' => $_POST['comment'],
-						'name' => $_POST['name'],
-						'email' => $_POST['email'],
-						'url' => $_POST['url'],
-						'created_by' => $_POST['created_by'],
-						'parent_id' => $_POST['parent_id'],
-						'sticked' => $_POST['sticked'],
-						'subscribe' => $_POST['subscribe']
+						'component' => $this->app->input->getCmd('component', ''),
+						'cid' => $this->app->input->getInt('id', 0),
+						'title' => $this->app->input->getString('title', ''),
+						'comment' => $this->app->input->getString('comment', ''),
+						'name' => $this->app->input->getString('name', ''),
+						'email' => $this->app->input->getString('email', ''),
+						'url' => $this->app->input->getString('url', ''),
+						'created_by' => $this->app->input->getInt('created_by', 0),
+						'parent_id' => $this->app->input->getInt('parent_id', 0),
+						'sticked' => $this->app->input->getInt('sticked', 0),
+						'subscribe' => $this->app->input->getInt('subscribe', 0)
     		  );
     
     // construct comment data with demo data (for testing purpose only)
