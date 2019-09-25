@@ -99,12 +99,12 @@ class plgJBackendKomento extends JPlugin
         $error['error_code'] = 'KOM_NON';
         $error['error_description'] = 'Komento not enabled on selected component';
         break;
-      case 'USR_DNY':
-        $error['error_code'] = 'USR_DNY';
+      case 'KOM_DNY':
+        $error['error_code'] = 'KOM_DNY';
         $error['error_description'] = 'User does not have the permission to post';
         break;
-      case 'EML_NOT':
-        $error['error_code'] = 'EML_NOT';
+      case 'KOM_ENV':
+        $error['error_code'] = 'KOM_ENV';
         $error['error_description'] = 'User email address is not valid or is not recognised';
         break;
     }
@@ -306,7 +306,7 @@ class plgJBackendKomento extends JPlugin
 		}
 	}
 	if (!$is_allowed === true) {
-    $response = self::generateError('USR_DNY'); // current user does not have the permission to post
+    $response = self::generateError('KOM_DNY'); // current user does not have the permission to post
     return false;
 	}
 	
@@ -314,7 +314,7 @@ class plgJBackendKomento extends JPlugin
 	$subscribe = $comment_data['subscribe'];
 	$email = $comment_data['email'];
 	if ($subscribe == 1 && !preg_match('^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$^', $email)) {
-    $response = self::generateError('EML_NOT'); // // user email address is not valid or is not recognised
+    $response = self::generateError('KOM_ENV'); // // user email address is not valid or is not recognised
     return false;
 	}
     
