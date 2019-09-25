@@ -231,9 +231,10 @@ class plgJBackendKomento extends JPlugin
    * @since   0.9.1
    */
   public function actionCreate(&$response, &$status = null)
-  { 
-    // construct comment data array with passed data	
-	
+  {
+  $now = new JDate('now'); // Current date and time
+
+  // construct comment data array with passed data
 	$comment_data = array(
 						'component' => $this->app->input->getCmd('component', ''),
 						'cid' => $this->app->input->getInt('cid', 0),
@@ -245,7 +246,10 @@ class plgJBackendKomento extends JPlugin
 						'created_by' => $this->app->input->getInt('created_by', 0),
 						'parent_id' => $this->app->input->getInt('parent_id', 0),
 						'sticked' => $this->app->input->getInt('sticked', 0),
-						'subscribe' => $this->app->input->getInt('subscribe', 0)
+						'subscribe' => $this->app->input->getInt('subscribe', 0),
+            'created' => $now,
+            'modified' => $now,
+            'publish_up' => null
     		  );
     
     // construct comment data with demo data (for testing purpose only)
@@ -261,7 +265,10 @@ class plgJBackendKomento extends JPlugin
             'created_by' => 196,
             'parent_id' => 0,
             'sticked' => 0,
-            'subscribe' => 1
+            'subscribe' => 1,
+            'created' => $now,
+            'modified' => $now,
+            'publish_up' => null
             );
   */
 
@@ -296,6 +303,7 @@ class plgJBackendKomento extends JPlugin
 	$moderation_enabled = (int)$komento_configs->enable_moderation;
 	if (!$moderation_enabled == 1) {
 		$comment_data['published'] = 1;
+    $comment_data['publish_up'] = $now;
 	} else {
 		$comment_data['published'] = 0;
 	}
@@ -353,7 +361,10 @@ class plgJBackendKomento extends JPlugin
 						'created_by',
 						'parent_id',
 						'sticked',
-						'published'
+						'published',
+            'created',
+            'modified',
+            'publish_up'
 						);
 		$values = array(
 						$db->quote($data['component']),
@@ -366,7 +377,10 @@ class plgJBackendKomento extends JPlugin
 						$data['created_by'],
 						$data['parent_id'],
 						$data['sticked'],
-						$data['published']
+						$data['published'],
+            $db->quote($data['created']),
+            $db->quote($data['modified']),
+            $db->quote($data['publish_up'])
 						);
 		$query
 			->insert($db->quoteName('#__komento_comments'))
