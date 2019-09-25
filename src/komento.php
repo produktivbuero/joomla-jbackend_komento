@@ -302,8 +302,7 @@ class plgJBackendKomento extends JPlugin
 		$db->setQuery($query);
 		$komento_acl = json_decode($db->loadResult());
 		$can_add = $komento_acl->add_comment;
-		$can_publish = $komento_acl->author_publish_comment;
-		if ($can_add && $can_publish) {
+		if ($can_add) {
 			$is_allowed = true;
 		}
 	}
