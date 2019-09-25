@@ -111,6 +111,10 @@ class plgJBackendKomento extends JPlugin
         $error['error_code'] = 'KOM_ENV';
         $error['error_description'] = 'User email address is not valid or is not recognised';
         break;
+      case 'KOM_COM':
+        $error['error_code'] = 'KOM_COM';
+        $error['error_description'] = 'Comment text not specified';
+        break;
     }
 
     return $error;
@@ -284,6 +288,12 @@ class plgJBackendKomento extends JPlugin
   if (empty($component_id))
   {
     $response = self::generateError('KOM_CID'); // component item id required
+    return false;
+  }
+
+  if (empty($comment_data['comment']))
+  {
+    $response = self::generateError('KOM_COM'); // comment required
     return false;
   }
     
