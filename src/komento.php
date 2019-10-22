@@ -322,6 +322,8 @@ class plgJBackendKomento extends JPlugin
     $comment_data['created_by'] = 0;
   } else {
     $comment_data['created_by'] = $user->id;
+    if ( empty($comment_data['name']) ) $comment_data['name'] = $user->name;
+    if ( empty($comment_data['email']) ) $comment_data['email'] = $user->email;
   }
 
 	// check if the current user has the permission to post
