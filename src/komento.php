@@ -237,6 +237,7 @@ class plgJBackendKomento extends JPlugin
   public function actionCreate(&$response, &$status = null)
   {
   $now = new JDate('now'); // Current date and time
+  $user = JFactory::getUser();
 
   // construct comment data array with passed data
 	$comment_data = array(
@@ -247,7 +248,6 @@ class plgJBackendKomento extends JPlugin
 						'name' => $this->app->input->getString('name', ''),
 						'email' => $this->app->input->getString('email', ''),
 						'url' => $this->app->input->getString('url', ''),
-						'created_by' => $this->app->input->getInt('created_by', 0),
 						'parent_id' => $this->app->input->getInt('parent_id', 0),
 						'sticked' => $this->app->input->getInt('sticked', 0),
 						'subscribe' => $this->app->input->getInt('subscribe', 0),
@@ -266,7 +266,6 @@ class plgJBackendKomento extends JPlugin
             'name' => 'Myname',
             'email' => 'email@email.com',
             'url' => 'https://www.google.com',
-            'created_by' => 196,
             'parent_id' => 0,
             'sticked' => 0,
             'subscribe' => 1,
@@ -318,15 +317,17 @@ class plgJBackendKomento extends JPlugin
 		$comment_data['published'] = 0;
 	}
 	
+  // manage the user who creates the article
+  if ($user->guest) {
+    $comment_data['created_by'] = 0;
+  } else {
+    $comment_data['created_by'] = $user->id;
+  }
+
 	// check if the current user has the permission to post
-	$user_id = (int)$comment_data['created_by'];
-	$is_guest = !$user_id ? 1 : 0;
 	$is_allowed = false;
-	if (!$is_guest) {
-		$user_groups = JAccess::getGroupsByUser($user_id);
-	} else {
-		$user_groups = JAccess::getGroupsByUser(0);
-	}
+  $user_groups = JAccess::getGroupsByUser($comment_data['created_by']);
+	
 	foreach ($user_groups as $group) {
 		$db = JFactory::getDbo();
 		$query = $db->getQuery(true);
@@ -339,6 +340,7 @@ class plgJBackendKomento extends JPlugin
 		$can_add = $komento_acl->add_comment;
 		if ($can_add) {
 			$is_allowed = true;
+      break; // stop if one group is matching
 		}
 	}
 	if (!$is_allowed === true) {
@@ -354,8 +356,8 @@ class plgJBackendKomento extends JPlugin
     return false;
 	}
     
-    // function to write the new comment into the database
-    function write($data)
+  // function to write the new comment into the database
+  function write($data)
 	{	
 		// enter the new comment into the database
 		$db = JFactory::getDbo();
