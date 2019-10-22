@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.0" type="plugin" group="jbackend" method="upgrade">
   <name>plg_jbackend_komento</name>
-  <creationDate>09/2019</creationDate>
+  <creationDate>10/2019</creationDate>
   <author>Sebastian Brümmer</author>
   <authorEmail>sebastian@produktivbuero.de</authorEmail>
   <authorUrl>https://www.produktivbuero.de</authorUrl>
   <copyright>Copyright (C) 2019 *produktivbüro . All rights reserved</copyright>
   <license>GNU General Public License version 2 or later</license>
-  <version>0.9.1</version>
+  <version>0.9.2</version>
   <description>PLG_JBACKEND_KOMENTO_DESCRIPTION</description>
 
   <!-- Language files -->
