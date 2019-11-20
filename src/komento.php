@@ -1,13 +1,13 @@
 <?php
 /**
- * jBackend helloworld plugin for Joomla
+ * jBackend Komento plugin for Joomla
  *
- * @author selfget.com (info@selfget.com)
+ * @author Sebastian Brümmer <sebastian@produktivbuero.de>
  * @package jBackend
- * @copyright Copyright 2014 - 2015
- * @license GNU Public License
- * @link http://www.selfget.com
- * @version 0.9.1
+ * @copyright Copyright (C) 2019 *produktivbüro . All rights reserved
+ * @license GNU General Public License version 2 or later
+ * @link https://github.com/produktivbuero/
+ * @version 0.9.2
  */
 
 // no direct access
